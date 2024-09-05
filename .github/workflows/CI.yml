@@ -37,8 +37,8 @@ jobs:
         id: npm-ci-test
         run: npm run test
 
-  build-and-push:
-    name: Build and push docker image
+  build:
+    name: Build docker image
     runs-on: ubuntu-latest
     needs: lint-and-test
     steps:
@@ -50,8 +50,14 @@ jobs:
             DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
             DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
         run: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        if: ${{ !inputs.skip-push }}
       - name: Build docker image
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/github-action-school .
+
+  push:
+    name: push docker image
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ !inputs.skip-push }}
+    steps:  
       - name: Push to Dockerhub
         run: docker push ${{ secrets.DOCKER_USERNAME }}/github-action-school
